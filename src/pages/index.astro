@@ -1,7 +1,206 @@
 ---
+import SectionContainer from "../components/SectionContainer.astro";
+import Button from "../components/Button.astro";
 import Layout from "../layouts/Layout.astro";
+import MicrophoneIcon from "../icons/Microphone.astro";
+import WebcamIcon from "../icons/Webcam.astro";
 ---
 
-<Layout title="Welcome to Astro.">
-	<main><h1 class=" text-blue-600">hello</h1></main>
+<Layout
+	title="Grabador de pantalla"
+	description="Graba tus presentaciones con webcam y micrófono"
+>
+	<main class="px-4 inline-flex">
+		<SectionContainer class="grid place-content-center">
+			<div class="h-[15rem] mb-2 w-[25rem] flex text-center justify-evenly">
+				<div
+					class="h-full w-4 rounded-md -scale-100 truncate bg-slate-300 border border-gray-400"
+				>
+					<div id="micVolumeBar" class="max-h-full bg-green-600 w-full"></div>
+				</div>
+				<video
+					id="webcamPreview"
+					class="h-[15rem] max-h-full rounded-md border border-gray-400 bg-black"
+					style="max-width:90%"
+					autoplay
+					controls></video>
+			</div>
+
+			<div class="w-[25rem] flex px-2 gap-2">
+				<Button id="toggleMic">
+					Microphone: off
+					<MicrophoneIcon class="size-4" />
+				</Button>
+				<Button id="toggleWebcam">
+					Webcam: off
+					<WebcamIcon class="size-4" />
+				</Button>
+			</div>
+		</SectionContainer>
+
+		<SectionContainer class="grid place-content-center">
+			<div id="recordingBox" class="flex flex-col items-end">
+				<video
+					id="previewVideo"
+					class="h-[15rem] rounded-md border border-gray-400 bg-black"
+					autoplay
+					muted></video>
+				<p
+					id="previewTime"
+					class="relative bottom-6 right-2 z-10 shadow-amber-100 text-white"
+				>
+					00:00:00
+				</p>
+				<Button id="toggleRecording">Start recording</Button>
+			</div>
+		</SectionContainer>
+	</main>
 </Layout>
+
+<script>
+	const $toggleMic = document.getElementById("toggleMic") as HTMLButtonElement;
+	const $micPreview = document.getElementById("micVolumeBar") as HTMLElement;
+	const $toggleWebcam = document.getElementById("toggleWebcam") as HTMLButtonElement;
+	const $webcamPreview = document.getElementById("webcamPreview") as HTMLVideoElement;
+	const $toggleRecording = document.getElementById("toggleRecording") as HTMLButtonElement;
+	const $previewVideo = document.getElementById("previewVideo") as HTMLVideoElement;
+	const $previewTime = document.getElementById("previewTime") as HTMLElement;
+
+	// Activar micrófono
+	let micStream: any;
+	let analyserNode: any;
+	let bufferLength: any;
+	let frequencyVideoTrack: any;
+
+	function updateMicVolume() {
+		analyserNode.getByteFrequencyData(frequencyVideoTrack);
+		const volume = frequencyVideoTrack.reduce(
+			(total: number, value: number) => total + value,
+			0
+		);
+		$micPreview.style.height = volume / bufferLength + "%";
+		if (micStream.isActive) requestAnimationFrame(updateMicVolume);
+	}
+
+	$toggleMic.addEventListener("click", async () => {
+		if (!micStream?.isActive) {
+			$toggleMic.disabled = true;
+			if (!micStream) {
+				micStream = await navigator.mediaDevices.getUserMedia({
+					audio: true,
+				});
+				const audioContext = new window.AudioContext();
+				const audioInput = audioContext.createMediaStreamSource(micStream);
+				analyserNode = audioContext.createAnalyser();
+				audioInput.connect(analyserNode);
+				analyserNode.fftSize = 256;
+				bufferLength = analyserNode.frequencyBinCount;
+				frequencyVideoTrack = new Uint8Array(bufferLength);
+			}
+			$toggleMic.textContent = "Microphone: on";
+			$toggleMic.disabled = false;
+			micStream.isActive = true;
+			updateMicVolume();
+		} else {
+			$toggleMic.textContent = "Microphone: off";
+			micStream.isActive = false;
+		}
+	});
+
+	// Activar webcam
+	let webcamStream: any;
+
+	$toggleWebcam.addEventListener("click", async () => {
+		if (!webcamStream?.isActive) {
+			$toggleWebcam.disabled = true;
+			if (!webcamStream)
+				webcamStream = await navigator.mediaDevices.getUserMedia({
+					video: true,
+				});
+			$webcamPreview.srcObject = new MediaStream(webcamStream.getVideoTracks());
+			webcamStream.isActive = true;
+			$toggleWebcam.disabled = false;
+			$toggleWebcam.textContent = "Webcam: on";
+		} else {
+			$webcamPreview.srcObject = null;
+			webcamStream.isActive = false;
+			$toggleWebcam.textContent = "Webcam: off";
+		}
+	});
+
+	// Activar grabación
+	let mediaRecorder: any;
+	let displayStream: MediaStream | null = null;
+	let intervalId: any;
+
+	function stopRecording() {
+		$toggleRecording.disabled = true;
+		setTimeout(() => {
+			mediaRecorder.stop();
+			mediaRecorder = null;
+			displayStream?.getTracks().forEach((track) => track.stop());
+			displayStream = null;
+			$toggleMic.disabled = false;
+			$previewVideo.srcObject = null;
+			$toggleRecording.disabled = false;
+			$toggleRecording.textContent = "Start recording";
+			clearInterval(intervalId);
+			if ($previewTime) $previewTime.textContent = "00:00:00";
+		}, 1000);
+	}
+
+	$toggleRecording.addEventListener("click", async () => {
+		if (!mediaRecorder) {
+			$toggleMic.disabled = true;
+			$toggleRecording.disabled = true;
+
+			displayStream = await navigator.mediaDevices.getDisplayMedia({
+				video: { frameRate: { ideal: 120 } },
+				audio: true,
+			});
+			const combinedStream: MediaStreamTrack[] = [];
+			combinedStream.push(displayStream.getVideoTracks()[0]);
+			if (micStream?.isActive)
+				combinedStream.push(micStream.getAudioTracks()[0]);
+			$previewVideo.srcObject = new MediaStream(combinedStream);
+			mediaRecorder = new MediaRecorder($previewVideo.srcObject, {
+				mimeType: "video/webm;codecs=vp8,opus",
+			});
+			mediaRecorder.start();
+
+			// escuchar cuando se deja de compartir
+			combinedStream[0].addEventListener("ended", stopRecording);
+
+			// guardar el nuevo video capturado
+			mediaRecorder.addEventListener("dataavailable", (event: BlobEvent) => {
+				const now = new Date();
+				const pad = (num: number) => (num < 10 ? "0" + num : num);
+				const formattedDate = `${now.getFullYear()}${pad(
+					now.getMonth() + 1
+				)}${pad(now.getDate())}_${pad(now.getHours())}${pad(
+					now.getMinutes()
+				)}${pad(now.getSeconds())}`;
+
+				const link = document.createElement("a");
+				link.href = URL.createObjectURL(event.data);
+				link.download = `captura_${formattedDate}.webm`;
+				link.click();
+			});
+
+			// Actualizar tiempo
+			const tiempoInicio = Date.now();
+			intervalId = setInterval(() => {
+				const totalSeconds = Math.floor((Date.now() - tiempoInicio) / 1000);
+				const hours = Math.floor(totalSeconds / 3600);
+				const minutes = Math.floor((totalSeconds % 3600) / 60);
+				const seconds = totalSeconds % 60;
+				$previewTime.textContent = `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+			}, 500);
+
+			$toggleRecording.disabled = false;
+			$toggleRecording.textContent = "Stop recording";
+		} else {
+			stopRecording();
+		}
+	});
+</script>

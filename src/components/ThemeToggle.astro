@@ -1,0 +1,54 @@
+---
+import SunIcon from "../icons/Sun.astro";
+import MoonIcon from "../icons/Moon.astro";
+---
+
+<div class=" ml-1 mr-1">
+	<button
+		id="theme-toggle-btn"
+		aria-label="Change theme"
+		class="appearance-none border-none flex hover:scale-125 transition"
+	>
+		<SunIcon
+			id="light"
+			class="theme-toggle-icon size-4 transition-all"
+		/>
+		<MoonIcon
+			id="dark"
+			class="theme-toggle-icon absolute size-4 transition-all"
+		/>
+	</button>
+</div>
+
+<script is:inline>
+	const getThemePreference = () => {
+		if (typeof localStorage !== "undefined") {
+			return localStorage.getItem("theme") ?? "dark";
+		}
+		return window.matchMedia("(prefers-color-scheme: dark)").matches
+			? "dark"
+			: "light";
+	};
+
+	const updateTheme = () => {
+		const themePreference = getThemePreference();
+		const isDark = themePreference === "dark";
+		document.querySelectorAll(".theme-toggle-icon").forEach((element) => {
+			element.style.scale = element.id === themePreference ? "1" : "0";
+		});
+		document.documentElement.classList[isDark ? "add" : "remove"]("dark");
+	};
+
+	const toggleTheme = () => {
+		const currentTheme = getThemePreference();
+		const newTheme = currentTheme === "dark" ? "light" : "dark";
+		localStorage.setItem("theme", newTheme);
+		updateTheme();
+	};
+
+	document
+		.getElementById("theme-toggle-btn")
+		.addEventListener("click", toggleTheme);
+
+	updateTheme();
+</script>

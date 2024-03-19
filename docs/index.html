@@ -1,1 +1,113 @@
-<!DOCTYPE html><html lang="en"> <head><meta charset="UTF-8"><meta name="description" content="Astro description"><meta name="viewport" content="width=device-width"><link rel="icon" type="image/svg+xml" href="./favicon.svg"><meta name="generator" content="Astro v4.5.6"><title>Welcome to Astro.</title><link rel="stylesheet" href="./a/index.BRQT5ggN.css" /></head> <body>  <main><h1 class=" text-blue-600">hello</h1></main>  </body></html>
+<!DOCTYPE html><html lang="en"> <head><meta charset="UTF-8"><title>Grabador de pantalla</title><meta name="title" property="og:title" content="Grabador de pantalla"><meta name="description" property="og:description" content="Graba tus presentaciones con webcam y micrófono"><meta name="image" property="og:image" content="./images/banner.webp"><meta property="og:type" content="website"><meta property="og:url" content="https://maxiv95.github.io/rec"><meta property="fb:app_id" content="1798923197"><meta property="fb:admins" content="1798923197"><meta name="author" content="Maximiliano Van Megroot"><meta name="viewport" content="width=device-width"><link rel="icon" type="image/svg+xml" href="./favicon.svg"><meta name="generator" content="Astro v4.5.6"><meta name="astro-view-transitions-enabled" content="true"><meta name="astro-view-transitions-fallback" content="animate"><link rel="stylesheet" href="./a/index.CRZG0Rvj.css" /><script type="module" src="./a/hoisted.DbmvbImw.js"></script></head> <body class="relative text-black/80 dark:text-white flex justify-between"> <div class="absolute top-0 bottom-0 z-[-2] min-h-screen w-full bg-gray-50 dark:bg-gray-950
+      bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(255,255,0,0.1),rgba(0,0,255,0.1))]
+      dark:bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(0,0,255,0.4),rgba(0,0,255,0.09))]"></div> <header class="mx-auto mt-2 w-full top-0 z-10 flex items-center justify-center"> <nav class="px-3 py-1 flex gap-3 justify-center items-center font-medium rounded-full text-sm md:text-lg shadow-lg backdrop-blur bg-gray-500/40"> <a target="_blank" rel="noopener noreferrer" aria-label="portafolio" href="https://maxiv95.github.io" class="hover:scale-110 transition hover:text-blue-600 hover:dark:text-yellow-300">Portafolio</a> <div class=" ml-1 mr-1"> <button id="theme-toggle-btn" aria-label="Change theme" class="appearance-none border-none flex hover:scale-125 transition"> <svg id="light" class="theme-toggle-icon size-4 transition-all" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M12 12m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"></path><path d="M3 12h1m8 -9v1m8 8h1m-9 8v1m-6.4 -15.4l.7 .7m12.1 -.7l-.7 .7m0 11.4l.7 .7m-12.1 -.7l-.7 .7"></path></svg> <svg id="dark" class="theme-toggle-icon absolute size-4 transition-all" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z"></path></svg> </button> </div> <script>
+	const getThemePreference = () => {
+		if (typeof localStorage !== "undefined") {
+			return localStorage.getItem("theme") ?? "dark";
+		}
+		return window.matchMedia("(prefers-color-scheme: dark)").matches
+			? "dark"
+			: "light";
+	};
+
+	const updateTheme = () => {
+		const themePreference = getThemePreference();
+		const isDark = themePreference === "dark";
+		document.querySelectorAll(".theme-toggle-icon").forEach((element) => {
+			element.style.scale = element.id === themePreference ? "1" : "0";
+		});
+		document.documentElement.classList[isDark ? "add" : "remove"]("dark");
+	};
+
+	const toggleTheme = () => {
+		const currentTheme = getThemePreference();
+		const newTheme = currentTheme === "dark" ? "light" : "dark";
+		localStorage.setItem("theme", newTheme);
+		updateTheme();
+	};
+
+	document
+		.getElementById("theme-toggle-btn")
+		.addEventListener("click", toggleTheme);
+
+	updateTheme();
+</script> </nav> </header>  <main class="px-4 inline-flex"> <section class="section grid place-content-center w-full mx-auto container lg:max-w-4xl md:max-w-2xl">  <div class="h-[15rem] mb-2 w-[25rem] flex text-center justify-evenly"> <div class="h-full w-4 rounded-md -scale-100 truncate bg-slate-300 border border-gray-400"> <div id="micVolumeBar" class="max-h-full bg-green-600 w-full"></div> </div> <video id="webcamPreview" class="h-[15rem] max-h-full rounded-md border border-gray-400 bg-black" style="max-width:90%" autoplay controls></video> </div> <div class="w-[25rem] flex px-2 gap-2"> <button id="toggleMic" class="transition
+	px-4
+	py-1
+	gap-2
+	w-full
+	inline-flex
+	items-center
+	justify-center
+	border
+	rounded-full
+	text-md
+	bg-gray-100
+	border-gray-400
+	hover:text-white
+	hover:bg-gray-500
+	hover:border-gray-900
+	focus-visible:ring-blue-500/50
+	dark:bg-gray-800
+	dark:border-gray-600
+	dark:hover:bg-gray-500
+	dark:focus-visible:ring-yellow-300/80
+	focus:outline-none
+	focus-visible:outline-none
+	focus-visible:ring
+	focus-visible:ring-offset-2"> 
+Microphone: off
+<svg class="size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M9 2m0 3a3 3 0 0 1 3 -3h0a3 3 0 0 1 3 3v5a3 3 0 0 1 -3 3h0a3 3 0 0 1 -3 -3z"></path><path d="M5 10a7 7 0 0 0 14 0"></path><path d="M8 21l8 0"></path><path d="M12 17l0 4"></path></svg>  </button> <button id="toggleWebcam" class="transition
+	px-4
+	py-1
+	gap-2
+	w-full
+	inline-flex
+	items-center
+	justify-center
+	border
+	rounded-full
+	text-md
+	bg-gray-100
+	border-gray-400
+	hover:text-white
+	hover:bg-gray-500
+	hover:border-gray-900
+	focus-visible:ring-blue-500/50
+	dark:bg-gray-800
+	dark:border-gray-600
+	dark:hover:bg-gray-500
+	dark:focus-visible:ring-yellow-300/80
+	focus:outline-none
+	focus-visible:outline-none
+	focus-visible:ring
+	focus-visible:ring-offset-2"> 
+Webcam: off
+<svg class="size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M12 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"></path><path d="M12 10m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0"></path><path d="M8 16l-2.091 3.486a1 1 0 0 0 .857 1.514h10.468a1 1 0 0 0 .857 -1.514l-2.091 -3.486"></path></svg>  </button> </div>  </section> <section class="section grid place-content-center w-full mx-auto container lg:max-w-4xl md:max-w-2xl">  <div id="recordingBox" class="flex flex-col items-end"> <video id="previewVideo" class="h-[15rem] rounded-md border border-gray-400 bg-black" autoplay muted></video> <p id="previewTime" class="relative bottom-6 right-2 z-10 shadow-amber-100 text-white">
+00:00:00
+</p> <button id="toggleRecording" class="transition
+	px-4
+	py-1
+	gap-2
+	w-full
+	inline-flex
+	items-center
+	justify-center
+	border
+	rounded-full
+	text-md
+	bg-gray-100
+	border-gray-400
+	hover:text-white
+	hover:bg-gray-500
+	hover:border-gray-900
+	focus-visible:ring-blue-500/50
+	dark:bg-gray-800
+	dark:border-gray-600
+	dark:hover:bg-gray-500
+	dark:focus-visible:ring-yellow-300/80
+	focus:outline-none
+	focus-visible:outline-none
+	focus-visible:ring
+	focus-visible:ring-offset-2"> Start recording </button> </div>  </section> </main>  <footer class="flex justify-center m-8"> <span class="text-sm text-zinc-800/90 dark:text-zinc-200/90">
+© 2024 <a href="https://github.com/MaxiV95" target="_blank" rel="noopener noreferrer" class="hover:underline">MaxiV95.</a> </span> </footer>  </body> </html> 
