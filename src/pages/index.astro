@@ -10,7 +10,7 @@ import WebcamIcon from "../icons/Webcam.astro";
 	title="Grabador de pantalla"
 	description="Graba tus presentaciones con webcam y micrófono"
 >
-	<main class="px-4 inline-flex">
+	<main class="px-4 flex flex-col lg:flex-row justify-evenly h-[82vh]">
 		<SectionContainer class="grid place-content-center">
 			<div class="h-[15rem] mb-2 w-[25rem] flex text-center justify-evenly">
 				<div
@@ -23,7 +23,8 @@ import WebcamIcon from "../icons/Webcam.astro";
 					class="h-[15rem] max-h-full rounded-md border border-gray-400 bg-black"
 					style="max-width:90%"
 					autoplay
-					controls></video>
+					controls
+					muted></video>
 			</div>
 
 			<div class="w-[25rem] flex px-2 gap-2">
@@ -39,15 +40,15 @@ import WebcamIcon from "../icons/Webcam.astro";
 		</SectionContainer>
 
 		<SectionContainer class="grid place-content-center">
-			<div id="recordingBox" class="flex flex-col items-end">
+			<div id="recordingBox" class="w-[25rem] flex flex-col relative">
 				<video
 					id="previewVideo"
-					class="h-[15rem] rounded-md border border-gray-400 bg-black"
+					class="h-[15rem] mb-2 max-h-full rounded-md border border-gray-400 bg-black"
 					autoplay
 					muted></video>
 				<p
 					id="previewTime"
-					class="relative bottom-6 right-2 z-10 shadow-amber-100 text-white"
+					class="absolute bottom-12 right-2 z-10 drop-shadow-[1px_3px_3px_rgba(255,255,255,1)] text-white"
 				>
 					00:00:00
 				</p>
@@ -60,10 +61,18 @@ import WebcamIcon from "../icons/Webcam.astro";
 <script>
 	const $toggleMic = document.getElementById("toggleMic") as HTMLButtonElement;
 	const $micPreview = document.getElementById("micVolumeBar") as HTMLElement;
-	const $toggleWebcam = document.getElementById("toggleWebcam") as HTMLButtonElement;
-	const $webcamPreview = document.getElementById("webcamPreview") as HTMLVideoElement;
-	const $toggleRecording = document.getElementById("toggleRecording") as HTMLButtonElement;
-	const $previewVideo = document.getElementById("previewVideo") as HTMLVideoElement;
+	const $toggleWebcam = document.getElementById(
+		"toggleWebcam"
+	) as HTMLButtonElement;
+	const $webcamPreview = document.getElementById(
+		"webcamPreview"
+	) as HTMLVideoElement;
+	const $toggleRecording = document.getElementById(
+		"toggleRecording"
+	) as HTMLButtonElement;
+	const $previewVideo = document.getElementById(
+		"previewVideo"
+	) as HTMLVideoElement;
 	const $previewTime = document.getElementById("previewTime") as HTMLElement;
 
 	// Activar micrófono
