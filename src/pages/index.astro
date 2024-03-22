@@ -3,7 +3,9 @@ import SectionContainer from "../components/SectionContainer.astro";
 import Button from "../components/Button.astro";
 import Layout from "../layouts/Layout.astro";
 import MicrophoneIcon from "../icons/Microphone.astro";
+import MicrophoneOffIcon from "../icons/Microphone-off.astro";
 import WebcamIcon from "../icons/Webcam.astro";
+import WebcamOffIcon from "../icons/Webcam-off.astro";
 ---
 
 <Layout
@@ -13,9 +15,7 @@ import WebcamIcon from "../icons/Webcam.astro";
 	<main class="px-4 flex flex-col lg:flex-row justify-evenly h-[82vh]">
 		<SectionContainer class="grid place-content-center">
 			<div class="h-[15rem] mb-2 w-[25rem] flex text-center justify-evenly">
-				<div
-					class="h-full w-4 rounded-md -scale-100 truncate bg-slate-300 border border-gray-400"
-				>
+				<div class="h-full w-4 rounded-md -scale-100 truncate bg-slate-300 border border-gray-400">
 					<div id="micVolumeBar" class="max-h-full bg-green-600 w-full"></div>
 				</div>
 				<video
@@ -29,12 +29,18 @@ import WebcamIcon from "../icons/Webcam.astro";
 
 			<div class="w-[25rem] flex px-2 gap-2">
 				<Button id="toggleMic">
-					Microphone: off
-					<MicrophoneIcon class="size-4" />
+					<span>Microphone: off</span>
+					<div class="flex relative">
+						<MicrophoneIcon id="MicOn" class="size-4" />
+						<MicrophoneOffIcon id="MicOff" class="size-4 absolute" />
+					</div>
 				</Button>
 				<Button id="toggleWebcam">
-					Webcam: off
-					<WebcamIcon class="size-4" />
+					<span>Webcam: off</span>
+					<div class="flex relative">
+						<WebcamIcon id="WebcamOn" class="size-4" />
+						<WebcamOffIcon id="WebcamOff" class="size-4 absolute" />
+					</div>
 				</Button>
 			</div>
 		</SectionContainer>
@@ -52,7 +58,13 @@ import WebcamIcon from "../icons/Webcam.astro";
 				>
 					00:00:00
 				</p>
-				<Button id="toggleRecording">Start recording</Button>
+				<Button id="toggleRecording">
+					<div id="RecordingOn" class="relative flex h-3 w-3 opacity-0">
+						<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
+						<span class="relative inline-flex rounded-full h-3 w-3 bg-red-600"></span>
+					</div>
+					<span id="toggleRecordingSpan">Start recording</span>
+				</Button>
 			</div>
 		</SectionContainer>
 	</main>
@@ -61,18 +73,10 @@ import WebcamIcon from "../icons/Webcam.astro";
 <script>
 	const $toggleMic = document.getElementById("toggleMic") as HTMLButtonElement;
 	const $micPreview = document.getElementById("micVolumeBar") as HTMLElement;
-	const $toggleWebcam = document.getElementById(
-		"toggleWebcam"
-	) as HTMLButtonElement;
-	const $webcamPreview = document.getElementById(
-		"webcamPreview"
-	) as HTMLVideoElement;
-	const $toggleRecording = document.getElementById(
-		"toggleRecording"
-	) as HTMLButtonElement;
-	const $previewVideo = document.getElementById(
-		"previewVideo"
-	) as HTMLVideoElement;
+	const $toggleWebcam = document.getElementById("toggleWebcam") as HTMLButtonElement;
+	const $webcamPreview = document.getElementById("webcamPreview") as HTMLVideoElement;
+	const $toggleRecording = document.getElementById("toggleRecording") as HTMLButtonElement;
+	const $previewVideo = document.getElementById("previewVideo") as HTMLVideoElement;
 	const $previewTime = document.getElementById("previewTime") as HTMLElement;
 
 	// Activar micrófono
@@ -83,10 +87,7 @@ import WebcamIcon from "../icons/Webcam.astro";
 
 	function updateMicVolume() {
 		analyserNode.getByteFrequencyData(frequencyVideoTrack);
-		const volume = frequencyVideoTrack.reduce(
-			(total: number, value: number) => total + value,
-			0
-		);
+		const volume = frequencyVideoTrack.reduce((total: number, value: number) => total + value, 0);
 		$micPreview.style.height = volume / bufferLength + "%";
 		if (micStream.isActive) requestAnimationFrame(updateMicVolume);
 	}
@@ -95,9 +96,7 @@ import WebcamIcon from "../icons/Webcam.astro";
 		if (!micStream?.isActive) {
 			$toggleMic.disabled = true;
 			if (!micStream) {
-				micStream = await navigator.mediaDevices.getUserMedia({
-					audio: true,
-				});
+				micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
 				const audioContext = new window.AudioContext();
 				const audioInput = audioContext.createMediaStreamSource(micStream);
 				analyserNode = audioContext.createAnalyser();
@@ -106,12 +105,16 @@ import WebcamIcon from "../icons/Webcam.astro";
 				bufferLength = analyserNode.frequencyBinCount;
 				frequencyVideoTrack = new Uint8Array(bufferLength);
 			}
-			$toggleMic.textContent = "Microphone: on";
+			($toggleMic.querySelector("span") as HTMLSpanElement).textContent = "Microphone: on";
+			(document.getElementById("MicOn") as HTMLElement).style.scale = "1";
+			(document.getElementById("MicOff") as HTMLElement).style.scale = "0";
 			$toggleMic.disabled = false;
 			micStream.isActive = true;
 			updateMicVolume();
 		} else {
-			$toggleMic.textContent = "Microphone: off";
+			($toggleMic.querySelector("span") as HTMLSpanElement).textContent = "Microphone: off";
+			(document.getElementById("MicOn") as HTMLElement).style.scale = "0";
+			(document.getElementById("MicOff") as HTMLElement).style.scale = "1";
 			micStream.isActive = false;
 		}
 	});
@@ -122,18 +125,19 @@ import WebcamIcon from "../icons/Webcam.astro";
 	$toggleWebcam.addEventListener("click", async () => {
 		if (!webcamStream?.isActive) {
 			$toggleWebcam.disabled = true;
-			if (!webcamStream)
-				webcamStream = await navigator.mediaDevices.getUserMedia({
-					video: true,
-				});
+			if (!webcamStream) webcamStream = await navigator.mediaDevices.getUserMedia({ video: true });
 			$webcamPreview.srcObject = new MediaStream(webcamStream.getVideoTracks());
 			webcamStream.isActive = true;
+			($toggleWebcam.querySelector("span") as HTMLSpanElement).textContent = "Webcam: on";
+			(document.getElementById("WebcamOn") as HTMLElement).style.scale = "1";
+			(document.getElementById("WebcamOff") as HTMLElement).style.scale = "0";
 			$toggleWebcam.disabled = false;
-			$toggleWebcam.textContent = "Webcam: on";
 		} else {
 			$webcamPreview.srcObject = null;
+			($toggleWebcam.querySelector("span") as HTMLSpanElement).textContent = "Webcam: off";
+			(document.getElementById("WebcamOn") as HTMLElement).style.scale = "0";
+			(document.getElementById("WebcamOff") as HTMLElement).style.scale = "1";
 			webcamStream.isActive = false;
-			$toggleWebcam.textContent = "Webcam: off";
 		}
 	});
 
@@ -152,7 +156,8 @@ import WebcamIcon from "../icons/Webcam.astro";
 			$toggleMic.disabled = false;
 			$previewVideo.srcObject = null;
 			$toggleRecording.disabled = false;
-			$toggleRecording.textContent = "Start recording";
+			(document.getElementById("RecordingOn") as HTMLElement).style.opacity = "0";
+			(document.getElementById("toggleRecordingSpan") as HTMLSpanElement).textContent = "Start recording";
 			clearInterval(intervalId);
 			if ($previewTime) $previewTime.textContent = "00:00:00";
 		}, 1000);
@@ -162,19 +167,12 @@ import WebcamIcon from "../icons/Webcam.astro";
 		if (!mediaRecorder) {
 			$toggleMic.disabled = true;
 			$toggleRecording.disabled = true;
-
-			displayStream = await navigator.mediaDevices.getDisplayMedia({
-				video: { frameRate: { ideal: 120 } },
-				audio: true,
-			});
+			displayStream = await navigator.mediaDevices.getDisplayMedia({ video: { frameRate: { ideal: 120 } }, audio: true });
 			const combinedStream: MediaStreamTrack[] = [];
 			combinedStream.push(displayStream.getVideoTracks()[0]);
-			if (micStream?.isActive)
-				combinedStream.push(micStream.getAudioTracks()[0]);
+			if (micStream?.isActive) combinedStream.push(micStream.getAudioTracks()[0]);
 			$previewVideo.srcObject = new MediaStream(combinedStream);
-			mediaRecorder = new MediaRecorder($previewVideo.srcObject, {
-				mimeType: "video/webm;codecs=vp8,opus",
-			});
+			mediaRecorder = new MediaRecorder($previewVideo.srcObject, { mimeType: "video/webm;codecs=vp8,opus"});
 			mediaRecorder.start();
 
 			// escuchar cuando se deja de compartir
@@ -207,7 +205,8 @@ import WebcamIcon from "../icons/Webcam.astro";
 			}, 500);
 
 			$toggleRecording.disabled = false;
-			$toggleRecording.textContent = "Stop recording";
+			(document.getElementById("RecordingOn") as HTMLElement).style.opacity = "1";
+			(document.getElementById("toggleRecordingSpan") as HTMLSpanElement).textContent = "Stop recording";
 		} else {
 			stopRecording();
 		}
