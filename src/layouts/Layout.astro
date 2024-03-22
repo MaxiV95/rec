@@ -1,8 +1,6 @@
 ---
-import "@fontsource-variable/onest";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
-import { ViewTransitions } from "astro:transitions";
 
 interface Props {
 	title: string;
@@ -21,16 +19,19 @@ const fbAppId = "1798923197";
 		<title>{title}</title>
 		<meta name="title" property="og:title" content={title} />
 		<meta name="description" property="og:description" content={description} />
-		<meta name="image" property="og:image" content="./images/banner.webp" />
+		<meta name="image" property="og:image" content="/banner.webp" />
 		<meta property="og:type" content="website" />
 		<meta property="og:url" content={`${baseUrl}`} />
 		<meta property="fb:app_id" content={`${fbAppId}`} />
 		<meta property="fb:admins" content={`${fbAppId}`} />
+		<meta name="theme-color" content="#333333" />
 		<meta name="author" content="Maximiliano Van Megroot" />
-		<meta name="viewport" content="width=device-width" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link href="https://fonts.googleapis.com/css2?family=Itim&family=Shadows+Into+Light&display=swap" rel="stylesheet">
 		<meta name="generator" content={Astro.generator} />
-		<ViewTransitions />
 	</head>
 	<body class="relative text-black/80 dark:text-white flex justify-between">
 		<div
@@ -46,29 +47,11 @@ const fbAppId = "1798923197";
 			:root {
 				color-scheme: dark light;
 			}
-			html {
-				font-family: "Onest Variable", system-ui, sans-serif;
-				scroll-behavior: smooth;
-			}
 			body {
+				font-family: "Itim";
 				display: flex;
 				flex-direction: column;
 				min-height: 100vh;
-			}
-			h1,
-			h2,
-			h3,
-			h4 {
-				text-wrap: balance;
-			}
-			p {
-				text-wrap: pretty;
-				line-height: 1.1rem;
-			}
-			@media (prefers-reduced-motion: reduce) {
-				html {
-					scroll-behavior: auto;
-				}
 			}
 		</style>
 	</body>
