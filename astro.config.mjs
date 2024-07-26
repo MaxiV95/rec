@@ -7,7 +7,7 @@ export default defineConfig({
 	integrations: [tailwind()],
 	outDir: "./docs",
 	build: {
-		assets: "a",
+		assets: "assets",
 		assetsPrefix: ".",
 	},
 });

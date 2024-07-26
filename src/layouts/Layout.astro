@@ -1,6 +1,7 @@
 ---
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
+import { ViewTransitions } from "astro:transitions";
 
 interface Props {
 	title: string;
@@ -32,6 +33,7 @@ const fbAppId = "1798923197";
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 		<link href="https://fonts.googleapis.com/css2?family=Itim&family=Shadows+Into+Light&display=swap" rel="stylesheet">
 		<meta name="generator" content={Astro.generator} />
+		<ViewTransitions />
 	</head>
 	<body class="relative text-black/80 dark:text-white flex justify-between">
 		<div
